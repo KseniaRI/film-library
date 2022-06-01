@@ -1,0 +1,27 @@
+.footer{
+    padding-top: 27px;
+    padding-bottom: 31px;
+    background-color: $footer-bg-color;
+}
+
+.footer__container{
+text-align: center;
+}
+
+.footer__text{
+ @include font(14px, 1.14, 0.02em, 400);
+ color: $footer-text-color;
+
+ &:not(:last-child){
+ margin-bottom: 10px;
+}
+}
+
+.footer__icon{
+    margin-right: 10px;
+    margin-left: 10px;
+}
+.footer__link{
+    color: inherit;
+    text-decoration: underline;
+}
