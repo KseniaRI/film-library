@@ -1,0 +1,22 @@
+.search-form{
+ display: flex;
+ width: 100%;
+ border-bottom: 1px solid white;
+}
+.search-form__input{
+width: 100%;    
+background-color: transparent;
+border: none;
+color: $light-text-color;
+outline: none;
+}
+
+.search-form__btn{
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+}
+.search-form__icon{
+ width: 12px;
+ height: 12px; 
+}

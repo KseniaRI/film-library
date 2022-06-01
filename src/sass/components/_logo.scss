@@ -1,0 +1,37 @@
+.logo{
+    display: block;
+    position: relative;
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+    outline: 1px solid $accent-color;
+    border-radius: 2px;
+}
+.logo__img{
+    display: block;
+    width: 24px;
+    height: 24px;
+
+    animation-name: move;
+    animation-duration: 1.5s;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-direction: normal;
+}
+ .logo::before {
+     @extend .logo__img;
+     position: absolute;
+     content: "";
+     top: -100%;
+     background-image: url(/src/images/logo-film.png);
+ }
+
+@keyframes move {
+    0% {
+        transform: translatey(0);
+    }
+
+    100% {
+        transform: translatey(24px);
+    }
+}

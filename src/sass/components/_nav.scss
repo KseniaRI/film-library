@@ -1,0 +1,26 @@
+.nav__list{
+    display: flex;
+}
+.nav__item{
+    margin-bottom: 50px;
+
+    &:not(:first-child) {
+            margin-left: 40px;
+        }
+    &:hover, &:focus{
+        color: $accent-color;
+    }
+}
+.nav__link{
+@include font(12px, 1.17, 0.02em, 500);
+color: $light-text-color;
+text-transform: uppercase;
+}
+
+.nav__item--active::after {
+display: block;
+content: "";
+width: 100%;
+height: 3px;
+background-color: $accent-color;
+}
