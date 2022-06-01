@@ -1,11 +1,16 @@
 .footer{
-    padding-top: 27px;
-    padding-bottom: 31px;
+    padding-top: 30px;
+    padding-bottom: 30px;
     background-color: $footer-bg-color;
 }
 
 .footer__container{
-text-align: center;
+    text-align: center;
+
+    @media screen and (min-width: 768px){
+    display: flex;
+    justify-content: center;
+    }
 }
 
 .footer__text{
