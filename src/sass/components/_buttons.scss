@@ -19,6 +19,7 @@
     color: $light-text-color;
     width: 129px;
     height: 44px;
+    outline: none;
 
     @media screen and (min-width: 768px) {
         width: 152px;
@@ -28,6 +29,13 @@
         width: 147px;
         height: 42px;
         }
+    &:focus, 
+    &:hover{
+        background-color: $accent-color;
+        border-color: $accent-color;
+        color: $light-text-color;
+    }
+      
 }
 .btn:not(:last-child){
     margin-right: 18px;
@@ -39,3 +47,27 @@
         margin-right: 16px;
         }
 }
+
+.btn-modal{
+    @extend .btn;
+    width: 110px;
+    border-color: #000;
+    color: #000;
+
+    @media screen and (min-width: 768px) {
+            width: 126px;
+        }
+                
+    @media screen and (min-width: 1024px) {
+            width: 136px;
+            height: 44px;
+                }
+}
+.modal__option-buttons {
+    display: flex;
+    justify-content: center;
+    // text-align: center;
+    
+}
+
+
