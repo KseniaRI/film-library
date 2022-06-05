@@ -1,14 +1,16 @@
 .search-form{
  display: flex;
  width: 100%;
-margin-top: 50px;
+ margin-top: 50px;
  border-bottom: 1px solid white;
+ margin-bottom: 16px;
 
 @media screen and (min-width: 768px) {
         width: 336px;
         margin-right: auto;
         margin-left: auto;
         margin-top: 40px;
+        margin-bottom: 20px;
 }
 }
 .search-form__input{
@@ -17,6 +19,7 @@ background-color: transparent;
 border: none;
 color: $light-text-color;
 outline: none;
+
 }
 
 .search-form__btn{

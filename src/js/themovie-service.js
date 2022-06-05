@@ -12,10 +12,9 @@ export default class TheMovieApiService{
 async fetchTrendingMovies(){
     try {
         const response = await axios(`/trending/movie/day?api_key=${API_KEY}`);
-        console.log(response.data.results);
+        // console.log(response.data.results);
         const { results } = response.data;
         return results;
-
         this.incrementPage();
     }
     catch (error) {
@@ -23,6 +22,22 @@ async fetchTrendingMovies(){
     }
 }
 
+async fetchMoviesByKeyWord(){
+    try {
+        const response = await axios(`/search/movie?&api_key=${API_KEY}&query=${this.searchQuery}&page=1`);
+        console.log(response.data);
+        const { results } = response.data;
+       
+        return results;
+
+        this.incrementPage();
+    }
+    catch (error) {
+       
+        console.log(error.message);
+    }
+
+}    
 getPage() {
         return this.page;
     }
