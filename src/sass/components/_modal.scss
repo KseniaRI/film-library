@@ -17,6 +17,8 @@
     pointer-events: none;
 }
 
+
+
 .modal {
     position: absolute;
     top: 50%;
@@ -35,12 +37,13 @@
     }
 
     @media screen and (min-width: 768px) {
-        
+        padding: 2px 72px 40px 36px;
         width: 704px;
         height: 552px;
     }
 
     @media screen and (min-width: 1024px) {
+        padding: 2px 16px 40px 16px;
         width: 814px;
         height: 558px;
     }

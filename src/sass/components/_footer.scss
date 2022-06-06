@@ -14,7 +14,7 @@
 }
 
 .footer__text{
- @include font(14px, 1.14, 0.02em, 400);
+ @include font(14px, 1.14, 400);
  color: $footer-text-color;
 
  &:not(:last-child){

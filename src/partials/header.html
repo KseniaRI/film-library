@@ -10,11 +10,12 @@
         </div>
         <nav class="nav">
           <ul class="nav__list">
-            <li class="nav__item nav__item--active"><a class="nav__link" href="./index.html">Home</a></li>
-            <li class="nav__item"><a class="nav__link" href="./my-library.html">my library</a></li>
+            <li class="nav__item"><button type="button" class="nav__btn nav__btn--home">Home</button></li>
+            <li class="nav__item"><button type="button" class="nav__btn nav__btn--library">my library</button></li>
           </ul>
         </nav>
       </div>
+      <div class="form-wrap">
       <form class="search-form">
         <input class="search-form__input" type="text" name="searchQuery" placeholder="Поиск фильмов">
         <button type="submit" class="search-form__btn">
@@ -23,6 +24,11 @@
           </svg>
         </button>
       </form>
+      </div>
+      <ul class="buttons">
+        <button type="button" class="btn">Watched</button>
+        <button type="button" class="btn">queue</button>
+      </ul>
       <p class="header__failure-message"></p>
     </div>
   

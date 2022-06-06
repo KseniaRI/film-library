@@ -42,7 +42,7 @@
 }
 
 .header__failure-message{
-    @include font(14px, 1.14, 0.02em, 400);
+    @include font(14px, 1.14, 400);
     text-align: center;
     color: #FF001B;
     

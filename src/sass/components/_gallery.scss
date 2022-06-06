@@ -4,6 +4,12 @@
     padding-bottom: 40px;
   
 }
+.gallery__failure-message{
+    @include font(18px, 1.44, 500);
+  
+    text-align: center;
+    color: #FF001B;
+}
 
 .grid{
    
@@ -27,16 +33,18 @@
 
 .film{
    
-   
+// height: 443px;
     @media screen and (max-width: 767px){
         &:not(:last-child){
             margin-bottom: 20px;
+            
         }
     }
 
     @media screen and (min-width: 768px){
     flex-basis: calc(100% / 2 - 32px);
-        /* flex-grow: 1; */
+
+        //  flex-grow: 1; 
         margin-left: 32px;
         margin-top: 32px;
         // height: 494px;
@@ -44,7 +52,7 @@
     }
     @media screen and (min-width: 1024px){
         flex-basis: calc(100% / 3 - 17px);
-            /* flex-grow: 1; */
+            
             margin-left: 17px;
             // height: 489px;
     }
@@ -56,7 +64,7 @@
 }
 
 .film__info{
-    @include font(12px, 1.33, 0.02em, 500);
+    @include font(12px, 1.33, 500);
 }
 .film__title{
     text-transform: uppercase;
