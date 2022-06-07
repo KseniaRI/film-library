@@ -15,6 +15,13 @@ const headerEl = document.querySelector('.header');
 const optionButtons = document.querySelector('.buttons');
 const movieCard = document.querySelector('.movie-card');
 const modal = document.querySelector('[data-modal]');
+const closeModalBtn = document.querySelector('[data-modal-close]');
+const paginationNextBtn = document.getElementById('next-page');
+const paginationPrevBtn = document.getElementById('prev-page');
+const pagesList = document.querySelector('.pagination__page-buttons');
+
+
+
 
 
 // const galleryItemsTml = Handlebars.compile('./templates/gallery-items.hbs');
@@ -24,14 +31,75 @@ searchForm.addEventListener("submit", onSearch);
 homeBtn.addEventListener("click", onHomePageClick);
 libraryBtn.addEventListener("click", onLibraryPageClick);
 
+paginationNextBtn.addEventListener("click", onNext);
+paginationPrevBtn.addEventListener("click", onPrev);
+pagesList.addEventListener("click", onPaginationBtnClick);
 
-theMovieApiService.fetchTrendingMovies(); 
+
 homeBtn.parentElement.classList.add('nav__item--active');
 optionButtons.classList.add("hidden");
 filmGrid.classList.add("home-grid");
+
 onHomePageLoad();
 
-filmGrid.addEventListener("click", onGridItemClick); 
+filmGrid.addEventListener("click", onGridItemClick);
+closeModalBtn.addEventListener('click', toggleModal); 
+
+
+
+let activPageIdx = 0;
+let pages = [];
+
+
+
+function onNext() {  
+      if (activPageIdx < pages.length - 1) {
+            activPageIdx += 1;
+            
+            pages[activPageIdx].classList.add('pagination__activ');
+            pages[activPageIdx - 1].classList.remove('pagination__activ');
+         
+            const pageNumber = pages[activPageIdx].textContent;
+            renderNewPage(pageNumber);
+     }
+     
+      
+}
+
+function onPrev() {
+      
+      if (activPageIdx > 0) {
+            activPageIdx -= 1;
+           
+           pages[activPageIdx + 1].classList.remove('pagination__activ');
+           pages[activPageIdx].classList.add('pagination__activ');  
+       }   
+      
+}
+
+function onPaginationBtnClick(evt) {
+      if (evt.target.nodeName !== "BUTTON") {
+            return;
+      }
+      evt.target.classList.add('pagination__activ');
+      pages[activPageIdx].classList.remove('pagination__activ'); 
+      activPageIdx = Number(evt.target.textContent) - 1;
+     
+      const pageNumber = evt.target.textContent;
+      
+      renderNewPage(pageNumber);
+}
+
+async function renderNewPage(pageNum) {
+      homeGrid.innerHTML = "";
+      const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(pageNum);
+      console.log(total_pages);
+      console.log(results);
+      renderGallery(results, homeGrid);
+}
+function toggleModal() {
+    modal.classList.toggle('is-hidden');
+  }
 
 function onHomePageClick() {
       onHomePageLoad()
@@ -56,15 +124,37 @@ function onLibraryPageClick() {
 
 async function onHomePageLoad() {
       try {
-            const trendingFilms = await theMovieApiService.fetchTrendingMovies();
-            // console.log(trendingFilms);
-            renderGallery(trendingFilms, homeGrid);
+            const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
+            renderGallery(results, homeGrid);
+            
+            
+            // renderPagination(8, pagesList);
+            renderPagination(total_pages);
+            pages = document.querySelectorAll('.page');
+            pages[0].classList.add("pagination__activ");
           
       } catch(error) {
             console.log(error);  
               }  
-      }        
-    
+}       
+      
+function renderPagination(totalPages) {
+      const markup = createPaginationTemplate(totalPages);
+      pagesList.insertAdjacentHTML("beforeend", markup);
+      // container.insertAdjacentHTML("beforeend", markup);
+      // container.insertAdjacentHTML("afterend", `<button type="button" class="pagination__btn">...</button>`);
+
+     
+}
+   
+function createPaginationTemplate(totalPages) {
+      let array = [];
+      for (let i = 1; i <= totalPages; i += 1){
+            array.push(`<button type="button" class="pagination__btn page">${i}</button>`);
+      }
+      return array.join("");
+     
+}
 async function onSearch(evt) {
       evt.preventDefault();
       theMovieApiService.query = evt.currentTarget.elements.searchQuery.value;
@@ -156,7 +246,7 @@ function createMovieTemplate(movie) {
 }
 
 function renderMovieCard(movie) {
-      
+      movieCard.innerHTML = "";
       const markup = createMovieTemplate(movie);
       console.log(markup);
       movieCard.insertAdjacentHTML("beforeend", markup);  
