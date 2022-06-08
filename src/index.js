@@ -40,8 +40,8 @@ closeModalBtn.addEventListener('click', toggleModal);
 let currentPage = null;
 let pages = [];
 let totalPages = 0;
-const paginationSelection = 4;
-// paginationPrevBtn.enabled = disabled;
+const paginationSelection = 9;
+
 
 function onNext() {  
 
@@ -81,7 +81,7 @@ function onPrev() {
              pagesList.innerHTML = "";
              const numOfFirstBtn = numOfLastBtn - paginationSelection + 1;
             renderPagination(numOfFirstBtn, paginationSelection);
-            renderNewPage(numOfFirstBtn);
+            renderNewPage(numOfLastBtn);
              currentPage = pagesList.lastElementChild;
              pagesList.firstElementChild.classList.remove('pagination__activ');
              currentPage.classList.add('pagination__activ');
