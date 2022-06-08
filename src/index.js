@@ -1,5 +1,3 @@
-// import filmCardTml from './templates/film-card.hbs';
-// import galleryItemsTml from './templates/gallery-items.hbs';
 import TheMovieApiService from './js/themovie-service';
 
 const theMovieApiService = new TheMovieApiService();
@@ -20,13 +18,6 @@ const paginationNextBtn = document.getElementById('next-page');
 const paginationPrevBtn = document.getElementById('prev-page');
 const pagesList = document.querySelector('.pagination__page-buttons');
 
-
-
-
-
-// const galleryItemsTml = Handlebars.compile('./templates/gallery-items.hbs');
-// const filmCardTml = Handlebars.compile('./templates/film-card.hbs');
-
 searchForm.addEventListener("submit", onSearch);
 homeBtn.addEventListener("click", onHomePageClick);
 libraryBtn.addEventListener("click", onLibraryPageClick);
@@ -34,7 +25,6 @@ libraryBtn.addEventListener("click", onLibraryPageClick);
 paginationNextBtn.addEventListener("click", onNext);
 paginationPrevBtn.addEventListener("click", onPrev);
 pagesList.addEventListener("click", onPaginationBtnClick);
-
 
 homeBtn.parentElement.classList.add('nav__item--active');
 optionButtons.classList.add("hidden");
@@ -46,61 +36,107 @@ filmGrid.addEventListener("click", onGridItemClick);
 closeModalBtn.addEventListener('click', toggleModal); 
 
 
-
-let activPageIdx = 0;
+// let activPageIdx = 0;
+let currentPage = null;
 let pages = [];
-
-
+let totalPages = 0;
+const paginationSelection = 4;
+// paginationPrevBtn.enabled = disabled;
 
 function onNext() {  
-      
-      if (activPageIdx < pages.length - 1) {
-           
-            activPageIdx += 1;
+
+       if (Number(currentPage.textContent) % paginationSelection === 0) {
             
-            pages[activPageIdx].classList.add('pagination__activ');
-            pages[activPageIdx - 1].classList.remove('pagination__activ');
-         
-            const pageNumber = pages[activPageIdx].textContent;
-            renderNewPage(pageNumber);
+            const numOfFirstBtn = Number(currentPage.textContent) + 1;
             pagesList.innerHTML = "";
-            renderPagination(activPageIdx + 1, 9);
-     }
-     
+            renderPagination(numOfFirstBtn, paginationSelection);
+            renderNewPage(numOfFirstBtn);
+
+            return;
+      }
+            currentPage = currentPage.nextElementSibling;
+            currentPage.classList.add('pagination__activ');
+            currentPage.previousElementSibling.classList.remove('pagination__activ');
+       
+            const pageNumber = currentPage.textContent;
+      
+      renderNewPage(pageNumber);
+      
+       if (Number(currentPage.textContent) === totalPages) {
+            paginationNextBtn.disabled = true;
+      } else if (Number(currentPage.textContent) === 1) {
+              paginationPrevBtn.disabled = true;
+           
+      } else {
+           paginationPrevBtn.disabled = false;
+      }
       
 }
 
 function onPrev() {
+     
+       if ((Number(currentPage.textContent) - 1) % paginationSelection === 0) {
+            
+            const numOfLastBtn = Number(currentPage.textContent) - 1;
+             pagesList.innerHTML = "";
+             const numOfFirstBtn = numOfLastBtn - paginationSelection + 1;
+            renderPagination(numOfFirstBtn, paginationSelection);
+            renderNewPage(numOfFirstBtn);
+             currentPage = pagesList.lastElementChild;
+             pagesList.firstElementChild.classList.remove('pagination__activ');
+             currentPage.classList.add('pagination__activ');
+            return;
+      }
+
+      currentPage.classList.remove('pagination__activ');
+      currentPage = currentPage.previousElementSibling;
+      currentPage.classList.add('pagination__activ');
+      const pageNumber = currentPage.textContent;
       
-      if (activPageIdx > 0) {
-            activPageIdx -= 1;
+      renderNewPage(pageNumber);
+      
+       if (Number(currentPage.textContent) === 1) {
+              paginationPrevBtn.disabled = true;
            
-           pages[activPageIdx + 1].classList.remove('pagination__activ');
-           pages[activPageIdx].classList.add('pagination__activ');  
-       }   
+      } else {
+           paginationPrevBtn.disabled = false;
+      } 
       
 }
 
-function onPaginationBtnClick(evt) {
-      if (evt.target.nodeName !== "BUTTON") {
-            return;
-      }
-      evt.target.classList.add('pagination__activ');
-      pages[activPageIdx].classList.remove('pagination__activ'); 
-      activPageIdx = Number(evt.target.textContent) - 1;
-     
-      const pageNumber = evt.target.textContent;
-      
-      renderNewPage(pageNumber);
-}
+function renderPagination(numOfStartBtn, selection) {
+            
+      const markup = createPaginationTemplate(numOfStartBtn, numOfStartBtn + selection - 1);
+            pagesList.insertAdjacentHTML("beforeend", markup);   
+            pages = document.querySelectorAll('.page');
+            currentPage = pages[0];
+            currentPage.classList.add("pagination__activ");
+}   
 
 async function renderNewPage(pageNum) {
       homeGrid.innerHTML = "";
       const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(pageNum);
-      console.log(total_pages);
-      console.log(results);
+      // console.log(total_pages);
+      // console.log(results);
       renderGallery(results, homeGrid);
+
+     
 }
+
+function onPaginationBtnClick(evt) {
+      currentPage.classList.remove('pagination__activ');
+      if (evt.target.nodeName !== "BUTTON") {
+            return;
+      }
+      currentPage = evt.target;
+      currentPage.classList.add('pagination__activ');
+
+      const pageNumber = currentPage.textContent;
+      
+      renderNewPage(pageNumber);
+}
+
+
 function toggleModal() {
     modal.classList.toggle('is-hidden');
   }
@@ -130,79 +166,20 @@ async function onHomePageLoad() {
       try {
             const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
             renderGallery(results, homeGrid);
-            
-            renderPagination(1, 9);
-           
-      //       pages = document.querySelectorAll('.page');
-      //       pages[0].classList.add("pagination__activ");
- 
-           
-      //       pages.forEach((page, idx) => {
-      //             if (idx < i && idx > i + selection - 1) {
-      //                   console.log(page);
-      //                   // page.classList.add('hidden');
-      //            }
-      //      })
-          
+            totalPages = total_pages; 
+
+            renderPagination(1, paginationSelection);
+             
       } catch(error) {
             console.log(error);  
               }  
 }    
 
-function renderPagination(idxStart, selection) {
-      // for (let i = 1; i < totalPages; i += selection){
-      //  pagesList.innerHTML = "";
-            
-      const markup = createPaginationTemplate(idxStart, idxStart + selection - 1);
-            pagesList.insertAdjacentHTML("beforeend", markup);
-            // pagesList.innerHTML = markup;
-            // console.log(`группа номер ${(i + selection - 1) / selection}`);
-           
-            pages = document.querySelectorAll('.page');
-            pages[0].classList.add("pagination__activ");
-            console.log(pages);
-           
-      //       pages.forEach((page, idx) => {
-      //             if (idx < i && idx > i + selection - 1) {
-      //                   console.log(page);
-      //                   page.classList.add('hidden');
-      //             } else { console.log(page); }
-                  
-      //      })     
-           } 
-      // }
-      
-// function renderPagination(totalPages, selection) {
-//       for (let i = 1; i < totalPages; i += selection){
-//       //  pagesList.innerHTML = "";
-            
-//       const markup = createPaginationTemplate(i, i + selection - 1);
-//             pagesList.insertAdjacentHTML("beforeend", markup);
-//             // pagesList.innerHTML = markup;
-//             // console.log(`группа номер ${(i + selection - 1) / selection}`);
-           
-//             pages = document.querySelectorAll('.page');
-//             pages[0].classList.add("pagination__activ");
-//             console.log(pages);
-           
-//       //       pages.forEach((page, idx) => {
-//       //             if (idx < i && idx > i + selection - 1) {
-//       //                   console.log(page);
-//       //                   page.classList.add('hidden');
-//       //             } else { console.log(page); }
-                  
-//       //      })     
-//            } 
-//       }
-
-     
-
-     
 
    
-function createPaginationTemplate(idxStart, idxEnd) {
+function createPaginationTemplate(btnNumStart, btnNumEnd) {
       let array = [];
-      for (let i = idxStart; i <= idxEnd; i += 1){
+      for (let i = btnNumStart; i <= btnNumEnd; i += 1){
             array.push(`<button type="button" class="pagination__btn page">${i}</button>`);
       }
       return array.join("");
@@ -305,3 +282,27 @@ function renderMovieCard(movie) {
       movieCard.insertAdjacentHTML("beforeend", markup);  
 }
 
+ // }
+      
+// function renderPagination(totalPages, selection) {
+//       for (let i = 1; i < totalPages; i += selection){
+//       //  pagesList.innerHTML = "";
+            
+//       const markup = createPaginationTemplate(i, i + selection - 1);
+//             pagesList.insertAdjacentHTML("beforeend", markup);
+//             // pagesList.innerHTML = markup;
+//             // console.log(`группа номер ${(i + selection - 1) / selection}`);
+           
+//             pages = document.querySelectorAll('.page');
+//             pages[0].classList.add("pagination__activ");
+//             console.log(pages);
+           
+//       //       pages.forEach((page, idx) => {
+//       //             if (idx < i && idx > i + selection - 1) {
+//       //                   console.log(page);
+//       //                   page.classList.add('hidden');
+//       //             } else { console.log(page); }
+                  
+//       //      })     
+//            } 
+//       }
