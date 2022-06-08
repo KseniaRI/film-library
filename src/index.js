@@ -53,7 +53,9 @@ let pages = [];
 
 
 function onNext() {  
+      
       if (activPageIdx < pages.length - 1) {
+           
             activPageIdx += 1;
             
             pages[activPageIdx].classList.add('pagination__activ');
@@ -61,6 +63,8 @@ function onNext() {
          
             const pageNumber = pages[activPageIdx].textContent;
             renderNewPage(pageNumber);
+            pagesList.innerHTML = "";
+            renderPagination(activPageIdx + 1, 9);
      }
      
       
@@ -127,29 +131,78 @@ async function onHomePageLoad() {
             const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
             renderGallery(results, homeGrid);
             
-            
-            // renderPagination(8, pagesList);
-            renderPagination(total_pages);
-            pages = document.querySelectorAll('.page');
-            pages[0].classList.add("pagination__activ");
+            renderPagination(1, 9);
+           
+      //       pages = document.querySelectorAll('.page');
+      //       pages[0].classList.add("pagination__activ");
+ 
+           
+      //       pages.forEach((page, idx) => {
+      //             if (idx < i && idx > i + selection - 1) {
+      //                   console.log(page);
+      //                   // page.classList.add('hidden');
+      //            }
+      //      })
           
       } catch(error) {
             console.log(error);  
               }  
-}       
+}    
+
+function renderPagination(idxStart, selection) {
+      // for (let i = 1; i < totalPages; i += selection){
+      //  pagesList.innerHTML = "";
+            
+      const markup = createPaginationTemplate(idxStart, idxStart + selection - 1);
+            pagesList.insertAdjacentHTML("beforeend", markup);
+            // pagesList.innerHTML = markup;
+            // console.log(`группа номер ${(i + selection - 1) / selection}`);
+           
+            pages = document.querySelectorAll('.page');
+            pages[0].classList.add("pagination__activ");
+            console.log(pages);
+           
+      //       pages.forEach((page, idx) => {
+      //             if (idx < i && idx > i + selection - 1) {
+      //                   console.log(page);
+      //                   page.classList.add('hidden');
+      //             } else { console.log(page); }
+                  
+      //      })     
+           } 
+      // }
       
-function renderPagination(totalPages) {
-      const markup = createPaginationTemplate(totalPages);
-      pagesList.insertAdjacentHTML("beforeend", markup);
-      // container.insertAdjacentHTML("beforeend", markup);
-      // container.insertAdjacentHTML("afterend", `<button type="button" class="pagination__btn">...</button>`);
+// function renderPagination(totalPages, selection) {
+//       for (let i = 1; i < totalPages; i += selection){
+//       //  pagesList.innerHTML = "";
+            
+//       const markup = createPaginationTemplate(i, i + selection - 1);
+//             pagesList.insertAdjacentHTML("beforeend", markup);
+//             // pagesList.innerHTML = markup;
+//             // console.log(`группа номер ${(i + selection - 1) / selection}`);
+           
+//             pages = document.querySelectorAll('.page');
+//             pages[0].classList.add("pagination__activ");
+//             console.log(pages);
+           
+//       //       pages.forEach((page, idx) => {
+//       //             if (idx < i && idx > i + selection - 1) {
+//       //                   console.log(page);
+//       //                   page.classList.add('hidden');
+//       //             } else { console.log(page); }
+                  
+//       //      })     
+//            } 
+//       }
 
      
-}
+
+     
+
    
-function createPaginationTemplate(totalPages) {
+function createPaginationTemplate(idxStart, idxEnd) {
       let array = [];
-      for (let i = 1; i <= totalPages; i += 1){
+      for (let i = idxStart; i <= idxEnd; i += 1){
             array.push(`<button type="button" class="pagination__btn page">${i}</button>`);
       }
       return array.join("");
