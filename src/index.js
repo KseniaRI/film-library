@@ -134,6 +134,13 @@ function onPaginationBtnClick(evt) {
       const pageNumber = currentPage.textContent;
       
       renderNewPage(pageNumber);
+
+       if (Number(currentPage.textContent) === 1) {
+              paginationPrevBtn.disabled = true;
+           
+      } else {
+           paginationPrevBtn.disabled = false;
+      } 
 }
 
 
