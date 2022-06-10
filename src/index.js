@@ -36,11 +36,12 @@ filmGrid.addEventListener("click", onGridItemClick);
 closeModalBtn.addEventListener('click', toggleModal); 
 
 
-// let activPageIdx = 0;
+
 let currentPage = null;
 let pages = [];
 let totalPages = 0;
 const paginationSelection = 9;
+let searchByKeyWord = false;
 
 
 function onNext() {  
@@ -50,7 +51,7 @@ function onNext() {
             const numOfFirstBtn = Number(currentPage.textContent) + 1;
             pagesList.innerHTML = "";
             renderPagination(numOfFirstBtn, paginationSelection);
-            renderNewPage(numOfFirstBtn);
+            searchByKeyWord === false ? renderNewTrendsPage(numOfFirstBtn) : renderNewQueryPage(numOfFirstBtn);
 
             return;
       }
@@ -60,7 +61,8 @@ function onNext() {
        
             const pageNumber = currentPage.textContent;
       
-      renderNewPage(pageNumber);
+            searchByKeyWord === false ? renderNewTrendsPage(pageNumber) : renderNewQueryPage(pageNumber);
+      
       
        if (Number(currentPage.textContent) === totalPages) {
             paginationNextBtn.disabled = true;
@@ -80,8 +82,10 @@ function onPrev() {
             const numOfLastBtn = Number(currentPage.textContent) - 1;
              pagesList.innerHTML = "";
              const numOfFirstBtn = numOfLastBtn - paginationSelection + 1;
-            renderPagination(numOfFirstBtn, paginationSelection);
-            renderNewPage(numOfLastBtn);
+             renderPagination(numOfFirstBtn, paginationSelection);
+             
+             searchByKeyWord === false ? renderNewTrendsPage(numOfLastBtn) : renderNewQueryPage(numOfLastBtn);
+          
              currentPage = pagesList.lastElementChild;
              pagesList.firstElementChild.classList.remove('pagination__activ');
              currentPage.classList.add('pagination__activ');
@@ -93,7 +97,7 @@ function onPrev() {
       currentPage.classList.add('pagination__activ');
       const pageNumber = currentPage.textContent;
       
-      renderNewPage(pageNumber);
+       searchByKeyWord === false ? renderNewTrendsPage(pageNumber) : renderNewQueryPage(pageNumber);
       
        if (Number(currentPage.textContent) === 1) {
               paginationPrevBtn.disabled = true;
@@ -113,14 +117,17 @@ function renderPagination(numOfStartBtn, selection) {
             currentPage.classList.add("pagination__activ");
 }   
 
-async function renderNewPage(pageNum) {
+
+async function renderNewTrendsPage(pageNum) {
       homeGrid.innerHTML = "";
       const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(pageNum);
-      // console.log(total_pages);
-      // console.log(results);
-      renderGallery(results, homeGrid);
+      renderGallery(results, homeGrid); 
+}
 
-     
+async function renderNewQueryPage(pageNum) {
+      homeGrid.innerHTML = "";
+      const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(pageNum);
+      renderGallery(results, homeGrid); 
 }
 
 function onPaginationBtnClick(evt) {
@@ -133,8 +140,8 @@ function onPaginationBtnClick(evt) {
 
       const pageNumber = currentPage.textContent;
       
-      renderNewPage(pageNumber);
-
+      searchByKeyWord === false ? renderNewTrendsPage(pageNumber) : renderNewQueryPage(pageNumber);
+      
        if (Number(currentPage.textContent) === 1) {
               paginationPrevBtn.disabled = true;
            
@@ -149,7 +156,9 @@ function toggleModal() {
   }
 
 function onHomePageClick() {
-      onHomePageLoad()
+      homeGrid.innerHTML = "";
+      pagesList.innerHTML = "";
+      onHomePageLoad();
       headerEl.classList.replace("library-header", "header");
       homeBtn.parentElement.classList.add('nav__item--active');
       libraryBtn.parentNode.classList.remove('nav__item--active');
@@ -159,6 +168,7 @@ function onHomePageClick() {
       filmGrid.classList.remove("library-grid");
 }
 function onLibraryPageClick() {
+      pagesList.innerHTML = "";
       homeGrid.innerHTML = "";
       headerEl.classList.replace("header", "library-header");
       libraryBtn.parentNode.classList.add('nav__item--active');
@@ -176,7 +186,7 @@ async function onHomePageLoad() {
             totalPages = total_pages; 
 
             renderPagination(1, paginationSelection);
-             
+            searchByKeyWord = false;
       } catch(error) {
             console.log(error);  
               }  
@@ -196,7 +206,8 @@ async function onSearch(evt) {
       evt.preventDefault();
       theMovieApiService.query = evt.currentTarget.elements.searchQuery.value;
       console.log(theMovieApiService.query);
-      homeGrid.innerHTML = "";
+      
+     
       alertGalleryMsg.textContent = "";
       alertHeaderMsg.textContent = "";
 
@@ -204,12 +215,18 @@ async function onSearch(evt) {
             alertGalleryMsg.textContent = "Oops, something went wrong!";
       }
       try {
-            const filmsWithKeyWord = await theMovieApiService.fetchMoviesByKeyWord();
-            if (filmsWithKeyWord.length === 0) {
+            const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(1);
+            if (results.length === 0) {
                   alertHeaderMsg.textContent = "Search result not successful. Enter the correct movie name and";
          }
-            console.log(filmsWithKeyWord);
-            renderGallery(filmsWithKeyWord, homeGrid);
+            console.log(results);
+            totalPages = total_pages;
+            pagesList.innerHTML = "";
+            homeGrid.innerHTML = "";
+            renderGallery(results, homeGrid);
+            renderPagination(1, paginationSelection);
+            searchByKeyWord = true;
+
       } catch (error) {
             console.log(error);  
       }
@@ -289,27 +306,3 @@ function renderMovieCard(movie) {
       movieCard.insertAdjacentHTML("beforeend", markup);  
 }
 
- // }
-      
-// function renderPagination(totalPages, selection) {
-//       for (let i = 1; i < totalPages; i += selection){
-//       //  pagesList.innerHTML = "";
-            
-//       const markup = createPaginationTemplate(i, i + selection - 1);
-//             pagesList.insertAdjacentHTML("beforeend", markup);
-//             // pagesList.innerHTML = markup;
-//             // console.log(`группа номер ${(i + selection - 1) / selection}`);
-           
-//             pages = document.querySelectorAll('.page');
-//             pages[0].classList.add("pagination__activ");
-//             console.log(pages);
-           
-//       //       pages.forEach((page, idx) => {
-//       //             if (idx < i && idx > i + selection - 1) {
-//       //                   console.log(page);
-//       //                   page.classList.add('hidden');
-//       //             } else { console.log(page); }
-                  
-//       //      })     
-//            } 
-//       }

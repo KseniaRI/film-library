@@ -23,13 +23,13 @@ async fetchTrendingMovies(page){
     }
 }
 
-async fetchMoviesByKeyWord(){
+async fetchMoviesByKeyWord(page){
     try {
-        const response = await axios(`/search/movie?&api_key=${API_KEY}&query=${this.searchQuery}&page=${this.page}`);
+        const response = await axios(`/search/movie?&api_key=${API_KEY}&query=${this.searchQuery}&page=${page}`);
         console.log(response.data);
-        const { results } = response.data;
-        this.incrementPage();
-        return results;
+        const { results, total_pages } = response.data;
+        // this.incrementPage();
+        return { results, total_pages };
 
         
     }
