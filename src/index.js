@@ -1,4 +1,28 @@
 import TheMovieApiService from './js/themovie-service';
+import { initializeApp } from 'firebase/app';
+import {
+      getAuth,
+      onAuthStateChanged,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      signOut
+} from 'firebase/auth';
+import { getDatabase } from 'firebase/database';
+import { getStorage } from 'firebase/storage';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBAGTQ42yHhlq8cz77MV0dJG1B6OSt6PVk",
+  authDomain: "filmoteca-db.firebaseapp.com",
+  projectId: "filmoteca-db",
+  storageBucket: "filmoteca-db.appspot.com",
+  messagingSenderId: "11660297526",
+  appId: "1:11660297526:web:617fc6ad62f4d10da81f97"
+};
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getDatabase(firebaseApp);
 
 const theMovieApiService = new TheMovieApiService();
 const filmGrid = document.querySelector('.grid');
@@ -12,15 +36,28 @@ const libraryBtn = document.querySelector('.nav__btn--library');
 const headerEl = document.querySelector('.header');
 const optionButtons = document.querySelector('.buttons');
 const movieCard = document.querySelector('.movie-card');
-const modal = document.querySelector('[data-modal]');
+const movieModal = document.querySelector('[data-modal]');
 const closeModalBtn = document.querySelector('[data-modal-close]');
+const closeAuthBtn = document.querySelector('[data-auth-close]');
 const paginationNextBtn = document.getElementById('next-page');
 const paginationPrevBtn = document.getElementById('prev-page');
 const pagesList = document.querySelector('.pagination__page-buttons');
+const authModal = document.querySelector('[data-auth]');
+const authWrap = document.querySelector('.auth__wrap');
+const txtEmail = document.getElementById('txtEmail');
+const txtPassword = document.getElementById('txtPassword');
+const btnLogin = document.getElementById('btnLogin');
+const btnSignup = document.getElementById('btnSignup');
+const btnLogout = document.getElementById('btnLogout');
+const successMsg = document.querySelector('.auth__success-msg');
+const authLogout = document.querySelector('.auth__logout');
 
 searchForm.addEventListener("submit", onSearch);
 homeBtn.addEventListener("click", onHomePageClick);
 libraryBtn.addEventListener("click", onLibraryPageClick);
+btnLogin.addEventListener("click", loginEmailPassword);
+btnSignup.addEventListener("click", createAccount);
+btnLogout.addEventListener("click", logout);
 
 paginationNextBtn.addEventListener("click", onNext);
 paginationPrevBtn.addEventListener("click", onPrev);
@@ -33,16 +70,81 @@ filmGrid.classList.add("home-grid");
 onHomePageLoad();
 
 filmGrid.addEventListener("click", onGridItemClick);
-closeModalBtn.addEventListener('click', toggleModal); 
-
+closeModalBtn.addEventListener('click', toggleMovieModal); 
+closeAuthBtn.addEventListener('click', closeAuthModal);
 
 
 let currentPage = null;
 let pages = [];
 let totalPages = 0;
-const paginationSelection = 9;
+const paginationSelection = 5;
 let searchByKeyWord = false;
 
+function closeAuthModal() {
+      authModal.classList.toggle('is-hidden');
+}
+
+async function logout() {
+      await signOut(auth);
+}
+
+async function monitorAuthState() {
+      onAuthStateChanged(auth, (user) => {
+  if (user) {
+        console.log(user);
+        
+        successMsg.textContent = `You've entered with email ${user.email}`;
+        authWrap.classList.add('hidden');
+        authLogout.classList.remove('hidden');
+        closeAuthBtn.classList.remove('hidden');
+      //   const uid = user.uid;
+
+  } else {
+        authWrap.classList.remove('hidden');
+        authLogout.classList.add('hidden');
+        closeAuthBtn.classList.add('hidden');
+  }
+});
+}
+
+async function loginEmailPassword() {
+      const loginEmail = txtEmail.value;
+      const loginPassword = txtPassword.value;
+      try {
+            const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+            successMsg.textContent = `You've signed in with email ${userCredential.user.email}`;
+      } catch(error) {
+            Notify.failure(`${error.message}`);
+}
+}
+
+async function createAccount() {
+      const loginEmail = txtEmail.value;
+      const loginPassword = txtPassword.value;
+      try {
+         const userCredential = await createUserWithEmailAndPassword(auth, loginEmail, loginPassword);
+     successMsg.textContent = `You've created account with email ${userCredential.user.email}`;
+      } catch(error) {
+            Notify.failure(`${error.message}`);
+}
+}
+
+function onLibraryPageClick() {
+      pagesList.innerHTML = "";
+      homeGrid.innerHTML = "";
+      headerEl.classList.replace("header", "library-header");
+      libraryBtn.parentNode.classList.add('nav__item--active');
+      homeBtn.parentNode.classList.remove('nav__item--active');
+      formWrap.classList.add("hidden");
+      optionButtons.classList.remove("hidden");
+      filmGrid.classList.remove("home-grid");
+      filmGrid.classList.add("library-grid");
+}
+
+ function showAuthModal() {
+       authModal.classList.remove('is-hidden');
+       closeAuthBtn.classList.add('hidden');
+  }
 
 function onNext() {  
 
@@ -117,7 +219,6 @@ function renderPagination(numOfStartBtn, selection) {
             currentPage.classList.add("pagination__activ");
 }   
 
-
 async function renderNewTrendsPage(pageNum) {
       homeGrid.innerHTML = "";
       const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(pageNum);
@@ -150,11 +251,10 @@ function onPaginationBtnClick(evt) {
       } 
 }
 
-
-function toggleModal() {
-    modal.classList.toggle('is-hidden');
-  }
-
+function toggleMovieModal() {
+    movieModal.classList.toggle('is-hidden');
+}
+ 
 function onHomePageClick() {
       homeGrid.innerHTML = "";
       pagesList.innerHTML = "";
@@ -167,19 +267,10 @@ function onHomePageClick() {
       filmGrid.classList.add("home-grid");
       filmGrid.classList.remove("library-grid");
 }
-function onLibraryPageClick() {
-      pagesList.innerHTML = "";
-      homeGrid.innerHTML = "";
-      headerEl.classList.replace("header", "library-header");
-      libraryBtn.parentNode.classList.add('nav__item--active');
-      homeBtn.parentNode.classList.remove('nav__item--active');
-      formWrap.classList.add("hidden");
-      optionButtons.classList.remove("hidden");
-      filmGrid.classList.remove("home-grid");
-      filmGrid.classList.add("library-grid");
-}
 
 async function onHomePageLoad() {
+      showAuthModal();
+      monitorAuthState();
       try {
             const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
             renderGallery(results, homeGrid);
@@ -192,8 +283,6 @@ async function onHomePageLoad() {
               }  
 }    
 
-
-   
 function createPaginationTemplate(btnNumStart, btnNumEnd) {
       let array = [];
       for (let i = btnNumStart; i <= btnNumEnd; i += 1){
@@ -240,7 +329,7 @@ async function onGridItemClick(evt) {
       const movieId = evt.target.id;
       console.log(movieId);
       const theMovie = await theMovieApiService.fetchMovieInfo(movieId);
-      modal.classList.remove("is-hidden");
+      movieModal.classList.remove("is-hidden");
       renderMovieCard(theMovie);
 }
 function renderGallery(films, grid) {
@@ -250,8 +339,7 @@ function renderGallery(films, grid) {
 
 function createGalleryTemplate(films) {
        return films.map(film => {
-            // const year = film.release_date.slice(0, 4);
-            const year = "2025";
+            const year = film.release_date.slice(0, 4);
             return `
                <a class="film">
                   <img class="film__poster" src="https://image.tmdb.org/t/p/w500${film.poster_path}" id = "${film.id}" alt="${film.title}" loading="lazy" />

@@ -1,0 +1,32 @@
+<div data-auth class="backdrop is-hidden">
+    <div class="modal auth">
+        <!-- <button type="button" data-auth-close class="modal__close-button">
+            <svg class="modal__close-icon">
+                <use href="./images/svg/symbol-defs.svg#icon-close"></use>
+            </svg>
+        </button> -->
+        <div class="auth__wrap">
+        <form class="auth-form">
+            <div class="auth-form__group">
+               <input class="auth-form__input" type="email" id="txtEmail">
+               <label>Email</label>
+            </div>
+            <div class="auth-form__group">
+                <input class="auth-form__input" type="password" id="txtPassword">
+                <label>Password</label>
+            </div>
+            <div class="modal__option-buttons">
+                <button class="btn-modal" type="button" id="btnLogin">Log in</button>
+                <button class="btn-modal" type="button" id="btnSignup">Sign up</button>  
+            </div>
+        </form>
+        </div>
+            <div class="auth__logout">
+                <p class="auth__success-msg"></p>
+                <div class="modal__option-buttons">
+                    <button class="btn-modal" type="button" data-auth-close>Continue</button>
+                    <button class="btn-modal" type="button" id="btnLogout">Logout</button>
+                </div>
+            </div>
+    </div>
+</div>
