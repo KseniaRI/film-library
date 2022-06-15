@@ -9,7 +9,7 @@ export default class TheMovieApiService{
         // this.page = 1;
     }
 
-async fetchTrendingMovies(page){
+ async fetchTrendingMovies(page){
     try {
         const response = await axios(`/trending/movie/day?api_key=${API_KEY}&page=${page}`);
         console.log(response.data);
@@ -21,7 +21,7 @@ async fetchTrendingMovies(page){
     catch (error) {
         console.log(error.message);
     }
-}
+ }
 
 async fetchMoviesByKeyWord(page){
     try {
@@ -30,27 +30,36 @@ async fetchMoviesByKeyWord(page){
         const { results, total_pages } = response.data;
         // this.incrementPage();
         return { results, total_pages };
-
-        
     }
     catch (error) {
-       
         console.log(error.message);
     }
 
-    }    
+}    
     
     async fetchMovieInfo(movie_id) {
      try {
         const response = await axios(`movie/${movie_id}?api_key=${API_KEY}`);
-        console.log(response.data);
+        console.log("это", response.data);
         return response.data;
         
     }
     catch (error) {
         console.log(error.message);
     }
-}    
+    }   
+    
+    // async fetchMovieById(external_id) {
+    // try {
+    //     const response = await axios(`/movie/${external_id}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`);
+    //     console.log("это", response);
+    //     return response;
+        
+    // }
+    // catch (error) {
+    //     console.log(error.message);
+    // }
+    // }
 
 getPage() {
         return this.page;

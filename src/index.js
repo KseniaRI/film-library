@@ -7,13 +7,13 @@ import {
       signInWithEmailAndPassword,
       signOut
 } from 'firebase/auth';
-import { getDatabase } from 'firebase/database';
-import { getStorage } from 'firebase/storage';
+import { getDatabase, onValue, ref, push, get, child } from 'firebase/database';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAGTQ42yHhlq8cz77MV0dJG1B6OSt6PVk",
   authDomain: "filmoteca-db.firebaseapp.com",
+  databaseURL: "https://filmoteca-db-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "filmoteca-db",
   storageBucket: "filmoteca-db.appspot.com",
   messagingSenderId: "11660297526",
@@ -21,12 +21,15 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
 const db = getDatabase(firebaseApp);
+const auth = getAuth(firebaseApp);
+
 
 const theMovieApiService = new TheMovieApiService();
 const filmGrid = document.querySelector('.grid');
 const homeGrid = document.querySelector('.home-grid');
+
+
 const searchForm = document.querySelector('.search-form');
 const formWrap = document.querySelector('.form-wrap');
 const alertHeaderMsg = document.querySelector('.header__failure-message');
@@ -52,12 +55,44 @@ const btnLogout = document.getElementById('btnLogout');
 const successMsg = document.querySelector('.auth__success-msg');
 const authLogout = document.querySelector('.auth__logout');
 
+const libraryWatchedBtn = document.querySelector('.btn-watched');
+const libraryQueueBtn = document.querySelector('.btn-queue');
+
+const genresInfo = [
+  { id: 12, name: 'Adventure' },
+  { id: 14, name: 'Fantasy' },
+  { id: 16, name: 'Animation' },
+  { id: 18, name: 'Drama' },
+  { id: 27, name: 'Horror' },
+  { id: 28, name: 'Action' },
+  { id: 35, name: 'Comedy' },
+  { id: 36, name: 'History' },
+  { id: 37, name: 'Western' },
+  { id: 53, name: 'Thriller' },
+  { id: 80, name: 'Crime' },
+  { id: 99, name: 'Documentary' },
+  { id: 878, name: 'Science Fiction' },
+  { id: 9648, name: 'Mystery' },
+  { id: 10402, name: 'Music' },
+  { id: 10749, name: 'Romance' },
+  { id: 10751, name: 'Family' },
+  { id: 10752, name: 'War' },
+  { id: 10770, name: 'TV Movie' },
+];
+function takeGenreById(genresId) {
+      return genresInfo.filter(genreInfo => genresId.includes(genreInfo.id))
+            .map(genreInfo => genreInfo.name)
+            .join(", "); 
+      };
+
 searchForm.addEventListener("submit", onSearch);
 homeBtn.addEventListener("click", onHomePageClick);
 libraryBtn.addEventListener("click", onLibraryPageClick);
 btnLogin.addEventListener("click", loginEmailPassword);
 btnSignup.addEventListener("click", createAccount);
 btnLogout.addEventListener("click", logout);
+libraryWatchedBtn.addEventListener("click", onlibraryBtnClick);
+libraryQueueBtn.addEventListener("click", onlibraryBtnClick);
 
 paginationNextBtn.addEventListener("click", onNext);
 paginationPrevBtn.addEventListener("click", onPrev);
@@ -79,6 +114,8 @@ let pages = [];
 let totalPages = 0;
 const paginationSelection = 5;
 let searchByKeyWord = false;
+let userId = null;
+
 
 function closeAuthModal() {
       authModal.classList.toggle('is-hidden');
@@ -90,15 +127,13 @@ async function logout() {
 
 async function monitorAuthState() {
       onAuthStateChanged(auth, (user) => {
-  if (user) {
-        console.log(user);
-        
+  if (user) {        
         successMsg.textContent = `You've entered with email ${user.email}`;
         authWrap.classList.add('hidden');
         authLogout.classList.remove('hidden');
         closeAuthBtn.classList.remove('hidden');
-      //   const uid = user.uid;
-
+        userId = user.uid;
+        console.log(userId);
   } else {
         authWrap.classList.remove('hidden');
         authLogout.classList.add('hidden');
@@ -139,9 +174,11 @@ function onLibraryPageClick() {
       optionButtons.classList.remove("hidden");
       filmGrid.classList.remove("home-grid");
       filmGrid.classList.add("library-grid");
+      paginationNextBtn.classList.add("hidden");
+      paginationPrevBtn.classList.add("hidden"); 
 }
 
- function showAuthModal() {
+function showAuthModal() {
        authModal.classList.remove('is-hidden');
        closeAuthBtn.classList.add('hidden');
   }
@@ -251,8 +288,8 @@ function onPaginationBtnClick(evt) {
       } 
 }
 
-function toggleMovieModal() {
-    movieModal.classList.toggle('is-hidden');
+function toggleMovieModal() {   
+      movieModal.classList.toggle('is-hidden');  
 }
  
 function onHomePageClick() {
@@ -294,8 +331,6 @@ function createPaginationTemplate(btnNumStart, btnNumEnd) {
 async function onSearch(evt) {
       evt.preventDefault();
       theMovieApiService.query = evt.currentTarget.elements.searchQuery.value;
-      console.log(theMovieApiService.query);
-      
      
       alertGalleryMsg.textContent = "";
       alertHeaderMsg.textContent = "";
@@ -308,7 +343,7 @@ async function onSearch(evt) {
             if (results.length === 0) {
                   alertHeaderMsg.textContent = "Search result not successful. Enter the correct movie name and";
          }
-            console.log(results);
+            // console.log(results);
             totalPages = total_pages;
             pagesList.innerHTML = "";
             homeGrid.innerHTML = "";
@@ -327,25 +362,40 @@ async function onGridItemClick(evt) {
             return;
       }
       const movieId = evt.target.id;
-      console.log(movieId);
       const theMovie = await theMovieApiService.fetchMovieInfo(movieId);
       movieModal.classList.remove("is-hidden");
       renderMovieCard(theMovie);
 }
 function renderGallery(films, grid) {
-     const markup = createGalleryTemplate(films);
+      const markup = createGalleryTemplate(films);
      grid.insertAdjacentHTML("beforeend", markup);  
 }
 
+function checkReleaseDate(releaseDate) {
+      let releaseYear;
+      releaseDate ? releaseYear = releaseDate.slice(0, 4) : releaseYear = "unknown year";
+      return releaseYear;
+}
 function createGalleryTemplate(films) {
-       return films.map(film => {
-            const year = film.release_date.slice(0, 4);
+      
+      return films.map(film => {
+            let genres = "";
+            if (film.genre_ids) {
+                  genres = takeGenreById(film.genre_ids);
+            } else {
+                  genres = film.genres.map(genre => {
+            return genre.name;
+      }).join(", ");
+            }
+           
+            const year = checkReleaseDate(film.release_date);
+           
             return `
                <a class="film">
                   <img class="film__poster" src="https://image.tmdb.org/t/p/w500${film.poster_path}" id = "${film.id}" alt="${film.title}" loading="lazy" />
                   <div class="film__info">
                         <p class="film__title">${film.title}</p>
-                        <p class="film__genre">${film.genre_ids}<span>| ${year}</span></p>
+                        <p class="film__genre">${genres}<span> | ${year}</span></p>
                   </div>
                </a>`}).join("");
 }
@@ -381,16 +431,100 @@ function createMovieTemplate(movie) {
             <h3 class="film-card__about">About</h3>
             <p class="film-card__description">${movie.overview}</p>
             <ul class="modal__option-buttons">
-                  <button type="button" class="btn-modal">add to Watched</button>
-                  <button type="button" class="btn-modal ">add to queue</button>
+                  <button type="button" class="btn-modal" id="addWatched">add to Watched</button>
+                  <button type="button" class="btn-modal" id="addQueue">add to queue</button>
             </ul>
       </div>`
 }
 
+let movieId = null;
+let myMovie = null;
+
+
+
 function renderMovieCard(movie) {
       movieCard.innerHTML = "";
       const markup = createMovieTemplate(movie);
-      console.log(markup);
-      movieCard.insertAdjacentHTML("beforeend", markup);  
+      movieCard.insertAdjacentHTML("beforeend", markup); 
+      const addWatchedBtn = document.getElementById('addWatched');
+      const addQueuedBtn = document.getElementById('addQueue');
+
+      movieId = movie.id;
+      myMovie = movie;
+      addWatchedBtn.addEventListener("click", onModalBtnClick);
+      addQueuedBtn.addEventListener("click", onModalBtnClick);
 }
+            
+// ---- firebase
+
+function onModalBtnClick(evt) {
+      if (evt.currentTarget.id === 'addWatched') {
+            writeMovieData(userId, myMovie, '/watched');
+      }
+      if (evt.currentTarget.id === 'addQueue') {
+            writeMovieData(userId, myMovie, '/queue');
+      }
+}
+       
+function writeMovieData(userId, movie, path) {
+  push(ref(db, 'users/' + userId + `${path}`), {
+    film: movie,
+  });
+}
+
+function onlibraryBtnClick(evt) {
+      
+      let moviesRef = null;
+      if (evt.currentTarget.classList.contains('btn-watched')) {
+             moviesRef = ref(db, 'users/' + userId + '/watched');
+      }
+      if (evt.currentTarget.classList.contains('btn-queue')) {
+             moviesRef = ref(db, 'users/' + userId + '/queue');
+      }
+     
+      onValue(moviesRef, (snapshot) => {
+            const data = snapshot.val();
+            const array = Object.values(data);
+            const arrayOfFilms = array.map(elem => elem.film);
+
+            const libraryGrid = document.querySelector('.library-grid');
+            libraryGrid.innerHTML = "";
+            renderGallery(arrayOfFilms, libraryGrid);
+      })
+}
+
+
+//------ localStorage 
+// let myMovies = [];
+//
+// let myLibrary = {
+//       uId: userId,
+//       movies: myMovies,
+// };
+
+// function onToWatchedBtnClick() {
+      // const moviesIds = myMovies.map(movie => movie.id);
+      // if (!moviesIds.includes(myMovie.id)) {
+      //       myMovies.push(myMovie);
+      // }
+     
+      //  localStorage.setItem("myLibrary", JSON.stringify(myLibrary));
+     
+// }
+
+// function onlibraryWatchedClick() {
+//       const savedWatchedMovies = localStorage.getItem("myLibrary");
+//       const parsedMovieData = JSON.parse(savedWatchedMovies);
+//       const watchedMovies = parsedMovieData.movies;
+//       const libraryGrid = document.querySelector('.library-grid');
+      
+//       renderGallery(watchedMovies, libraryGrid);
+            
+//      }
+
+// ----- end localStorage
+
+
+
+
 
