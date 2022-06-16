@@ -431,8 +431,8 @@ function createMovieTemplate(movie) {
             <h3 class="film-card__about">About</h3>
             <p class="film-card__description">${movie.overview}</p>
             <ul class="modal__option-buttons">
-                  <button type="button" class="btn-modal" id="addWatched">add to Watched</button>
-                  <button type="button" class="btn-modal" id="addQueue">add to queue</button>
+                  <button type="button" class="btn-modal" id="watched">add to Watched</button>
+                  <button type="button" class="btn-modal" id="queue">add to queue</button>
             </ul>
       </div>`
 }
@@ -440,14 +440,12 @@ function createMovieTemplate(movie) {
 let movieId = null;
 let myMovie = null;
 
-
-
 function renderMovieCard(movie) {
       movieCard.innerHTML = "";
       const markup = createMovieTemplate(movie);
       movieCard.insertAdjacentHTML("beforeend", markup); 
-      const addWatchedBtn = document.getElementById('addWatched');
-      const addQueuedBtn = document.getElementById('addQueue');
+      const addWatchedBtn = document.getElementById('watched');
+      const addQueuedBtn = document.getElementById('queue');
 
       movieId = movie.id;
       myMovie = movie;
@@ -458,12 +456,25 @@ function renderMovieCard(movie) {
 // ---- firebase
 
 function onModalBtnClick(evt) {
-      if (evt.currentTarget.id === 'addWatched') {
-            writeMovieData(userId, myMovie, '/watched');
-      }
-      if (evt.currentTarget.id === 'addQueue') {
-            writeMovieData(userId, myMovie, '/queue');
-      }
+      const path = evt.currentTarget.id;
+      const dbRef = ref(getDatabase());
+
+      get(child(dbRef, `users/${userId}/${path}`)).then((snapshot) => {
+       if (snapshot.exists()) {
+            const data = snapshot.val();
+            const array = Object.values(data);
+            const arrayOfFilms = array.map(elem => elem.film);
+            const ids = arrayOfFilms.map(movie => movie.id);
+            if (!ids.includes(myMovie.id)) {
+                  writeMovieData(userId, myMovie, `/${path}`);
+            }
+      } else {
+             writeMovieData(userId, myMovie, `/${path}`);
+}
+}).catch((error) => {
+  console.error(error);
+});
+
 }
        
 function writeMovieData(userId, movie, path) {
@@ -522,7 +533,7 @@ function onlibraryBtnClick(evt) {
             
 //      }
 
-// ----- end localStorage
+
 
 
 
