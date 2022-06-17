@@ -111,6 +111,7 @@ onHomePageLoad();
 filmGrid.addEventListener("click", onGridItemClick);
 closeModalBtn.addEventListener('click', toggleMovieModal); 
 closeAuthBtn.addEventListener('click', closeAuthModal);
+document.addEventListener("keydown", onEscape);
 
 
 let currentPage = null;
@@ -120,7 +121,11 @@ const paginationSelection = 5;
 let searchByKeyWord = false;
 let userId = null;
 
-
+function onEscape(evt) {
+      if (evt.code === "Escape") {
+            movieModal.classList.add('is-hidden');
+       }
+}
 function closeAuthModal() {
       authModal.classList.toggle('is-hidden');
 }
