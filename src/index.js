@@ -46,6 +46,7 @@ const closeAuthBtn = document.querySelector('[data-auth-close]');
 const paginationNextBtn = document.getElementById('next-page');
 const paginationPrevBtn = document.getElementById('prev-page');
 const pagesList = document.querySelector('.pagination__page-buttons');
+const pagination = document.querySelector('.pagination');
 const authModal = document.querySelector('[data-auth]');
 const authWrap = document.querySelector('.auth__wrap');
 const txtEmail = document.getElementById('txtEmail');
@@ -167,7 +168,7 @@ async function createAccount() {
 }
 }
 
-function onLibraryPageClick() {
+async function onLibraryPageClick() {
       pagesList.innerHTML = "";
       homeGrid.innerHTML = "";
       headerEl.classList.replace("header", "library-header");
@@ -177,9 +178,20 @@ function onLibraryPageClick() {
       optionButtons.classList.remove("hidden");
       filmGrid.classList.remove("home-grid");
       filmGrid.classList.add("library-grid");
+ 
 
-      paginationNextBtn.classList.add("hidden");
-      paginationPrevBtn.classList.add("hidden"); 
+       try {
+            const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
+           
+            renderGallery(results, homeGrid);
+             
+            totalPages = total_pages; 
+
+            renderPagination(1, paginationSelection);
+            // searchByKeyWord = false;
+      } catch(error) {
+            console.log(error);  
+              }  
 }
 
 function showAuthModal() {
@@ -350,6 +362,7 @@ function createPaginationTemplate(btnNumStart, btnNumEnd) {
 }
 async function onSearch(evt) {
       addSpinner();
+
       evt.preventDefault();
        
       theMovieApiService.query = evt.currentTarget.elements.searchQuery.value;
@@ -359,14 +372,19 @@ async function onSearch(evt) {
       
       if (theMovieApiService.query === "") {
             alertGalleryMsg.textContent = "Oops, something went wrong!";
+            removeSpinner();
+            homeGrid.innerHTML = "";
+            pagination.classList.add("hidden");
       }
 
 
 
       try {
             const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(1);
+            pagination.classList.remove("hidden");
             if (results.length === 0) {
                   alertHeaderMsg.textContent = "Search result not successful. Enter the correct movie name and";
+                  pagination.classList.add('hidden');
          }
             // console.log(results);
            
@@ -528,6 +546,10 @@ function onlibraryBtnClick(evt) {
             const libraryGrid = document.querySelector('.library-grid');
             libraryGrid.innerHTML = "";
             renderGallery(arrayOfFilms, libraryGrid);
+            
+      paginationNextBtn.classList.add("hidden");
+            paginationPrevBtn.classList.add("hidden");
+            pagesList.innerHTML = "";
       })
 }
 

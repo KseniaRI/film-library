@@ -48,18 +48,6 @@ async fetchMoviesByKeyWord(page){
         console.log(error.message);
     }
     }   
-    
-    // async fetchMovieById(external_id) {
-    // try {
-    //     const response = await axios(`/movie/${external_id}?api_key=${API_KEY}&language=en-US&external_source=imdb_id`);
-    //     console.log("это", response);
-    //     return response;
-        
-    // }
-    // catch (error) {
-    //     console.log(error.message);
-    // }
-    // }
 
 getPage() {
         return this.page;
