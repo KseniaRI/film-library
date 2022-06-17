@@ -16,6 +16,13 @@ border: none;
 }
 .pagination__arrow{
     background-color: $footer-bg-color;
+   fill: currentColor;
+   border-radius: 5px;
+    &:hover,
+    &:focus{
+        background-color: $accent-color;
+        color: $light-text-color;
+    }
 }
 .pagination__activ{
     background-color: $accent-color;

@@ -111,7 +111,7 @@ onHomePageLoad();
 filmGrid.addEventListener("click", onGridItemClick);
 closeModalBtn.addEventListener('click', toggleMovieModal); 
 closeAuthBtn.addEventListener('click', closeAuthModal);
-document.addEventListener("keydown", onEscape);
+
 
 
 let currentPage = null;
@@ -124,7 +124,15 @@ let userId = null;
 function onEscape(evt) {
       if (evt.code === "Escape") {
             movieModal.classList.add('is-hidden');
-       }
+      }
+      document.removeEventListener("keydown", onEscape);
+}
+
+function onBackdropClick(evt) {
+       console.log(evt.target);
+      if (evt.target.classList.contains('backdrop')) {
+         movieModal.classList.add('is-hidden');
+  }     
 }
 function closeAuthModal() {
       authModal.classList.toggle('is-hidden');
@@ -416,6 +424,8 @@ async function onGridItemClick(evt) {
       const theMovie = await theMovieApiService.fetchMovieInfo(movieId);
       movieModal.classList.remove("is-hidden");
       renderMovieCard(theMovie);
+      document.addEventListener("keydown", onEscape);
+      document.addEventListener("click", onBackdropClick);
 }
 function renderGallery(films, grid) {
       const markup = createGalleryTemplate(films);
