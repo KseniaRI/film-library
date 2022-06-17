@@ -5,7 +5,8 @@ import {
       onAuthStateChanged,
       createUserWithEmailAndPassword,
       signInWithEmailAndPassword,
-      signOut
+      signOut,
+      signInWithPhoneNumber
 } from 'firebase/auth';
 import { getDatabase, onValue, ref, push, get, child } from 'firebase/database';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
@@ -54,6 +55,8 @@ const btnSignup = document.getElementById('btnSignup');
 const btnLogout = document.getElementById('btnLogout');
 const successMsg = document.querySelector('.auth__success-msg');
 const authLogout = document.querySelector('.auth__logout');
+
+
 
 const libraryWatchedBtn = document.querySelector('.btn-watched');
 const libraryQueueBtn = document.querySelector('.btn-queue');
@@ -174,6 +177,7 @@ function onLibraryPageClick() {
       optionButtons.classList.remove("hidden");
       filmGrid.classList.remove("home-grid");
       filmGrid.classList.add("library-grid");
+
       paginationNextBtn.classList.add("hidden");
       paginationPrevBtn.classList.add("hidden"); 
 }
@@ -184,6 +188,7 @@ function showAuthModal() {
   }
 
 function onNext() {  
+      addSpinner();
 
        if (Number(currentPage.textContent) % paginationSelection === 0) {
             
@@ -215,6 +220,7 @@ function onNext() {
 }
 
 function onPrev() {
+      addSpinner();
      
        if ((Number(currentPage.textContent) - 1) % paginationSelection === 0) {
             
@@ -259,16 +265,19 @@ function renderPagination(numOfStartBtn, selection) {
 async function renderNewTrendsPage(pageNum) {
       homeGrid.innerHTML = "";
       const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(pageNum);
+      removeSpinner();
       renderGallery(results, homeGrid); 
 }
 
 async function renderNewQueryPage(pageNum) {
       homeGrid.innerHTML = "";
       const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(pageNum);
+      removeSpinner();
       renderGallery(results, homeGrid); 
 }
 
 function onPaginationBtnClick(evt) {
+      addSpinner();
       currentPage.classList.remove('pagination__activ');
       if (evt.target.nodeName !== "BUTTON") {
             return;
@@ -304,13 +313,24 @@ function onHomePageClick() {
       filmGrid.classList.add("home-grid");
       filmGrid.classList.remove("library-grid");
 }
-
+function addSpinner() {
+      const spinner = document.querySelector('.spinner');
+      spinner.classList.remove('hidden');
+}
+function removeSpinner() {
+      const spinner = document.querySelector('.spinner');
+      spinner.classList.add('hidden');
+}
 async function onHomePageLoad() {
       showAuthModal();
       monitorAuthState();
+      removeSpinner();
+     
       try {
             const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
+           
             renderGallery(results, homeGrid);
+             
             totalPages = total_pages; 
 
             renderPagination(1, paginationSelection);
@@ -329,24 +349,31 @@ function createPaginationTemplate(btnNumStart, btnNumEnd) {
      
 }
 async function onSearch(evt) {
+      addSpinner();
       evt.preventDefault();
+       
       theMovieApiService.query = evt.currentTarget.elements.searchQuery.value;
      
       alertGalleryMsg.textContent = "";
       alertHeaderMsg.textContent = "";
-
+      
       if (theMovieApiService.query === "") {
             alertGalleryMsg.textContent = "Oops, something went wrong!";
       }
+
+
+
       try {
             const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(1);
             if (results.length === 0) {
                   alertHeaderMsg.textContent = "Search result not successful. Enter the correct movie name and";
          }
             // console.log(results);
+           
             totalPages = total_pages;
             pagesList.innerHTML = "";
             homeGrid.innerHTML = "";
+            removeSpinner();
             renderGallery(results, homeGrid);
             renderPagination(1, paginationSelection);
             searchByKeyWord = true;
