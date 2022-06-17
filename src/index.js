@@ -187,7 +187,8 @@ async function onLibraryPageClick() {
              
             totalPages = total_pages; 
 
-            renderPagination(1, paginationSelection);
+             renderPagination(1, paginationSelection);
+             pagination.classList.remove('hidden');
             // searchByKeyWord = false;
       } catch(error) {
             console.log(error);  
@@ -344,7 +345,7 @@ async function onHomePageLoad() {
             renderGallery(results, homeGrid);
              
             totalPages = total_pages; 
-
+            pagination.classList.remove('hidden');
             renderPagination(1, paginationSelection);
             searchByKeyWord = false;
       } catch(error) {
@@ -547,9 +548,7 @@ function onlibraryBtnClick(evt) {
             libraryGrid.innerHTML = "";
             renderGallery(arrayOfFilms, libraryGrid);
             
-      paginationNextBtn.classList.add("hidden");
-            paginationPrevBtn.classList.add("hidden");
-            pagesList.innerHTML = "";
+            pagination.classList.add('hidden');
       })
 }
 
