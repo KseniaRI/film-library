@@ -6,15 +6,13 @@ export default class TheMovieApiService{
 
      constructor() { 
         this.searchQuery = "";
-        // this.page = 1;
     }
 
  async fetchTrendingMovies(page){
     try {
         const response = await axios(`/trending/movie/day?api_key=${API_KEY}&page=${page}`);
-        console.log(response.data);
         const { results, total_pages } = response.data;
-        // this.incrementPage();
+       
         return { results, total_pages };
         
     }
@@ -26,9 +24,7 @@ export default class TheMovieApiService{
 async fetchMoviesByKeyWord(page){
     try {
         const response = await axios(`/search/movie?&api_key=${API_KEY}&query=${this.searchQuery}&page=${page}`);
-        console.log(response.data);
         const { results, total_pages } = response.data;
-        // this.incrementPage();
         return { results, total_pages };
     }
     catch (error) {
@@ -37,10 +33,9 @@ async fetchMoviesByKeyWord(page){
 
 }    
     
-    async fetchMovieInfo(movie_id) {
+async fetchMovieInfo(movie_id) {
      try {
         const response = await axios(`movie/${movie_id}?api_key=${API_KEY}`);
-        console.log("это", response.data);
         return response.data;
         
     }
@@ -49,15 +44,6 @@ async fetchMoviesByKeyWord(page){
     }
     }   
 
-getPage() {
-        return this.page;
-    }
-    incrementPage() {
-        this.page += 1;
-    }
-    resetPage() {
-        this.page = 1;
-    }
     get query() {
         return this.searchQuery;
     }

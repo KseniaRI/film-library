@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { getDatabase, onValue, ref, push, get, child } from 'firebase/database';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import InfiniteScroll from 'infinite-scroll';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAGTQ42yHhlq8cz77MV0dJG1B6OSt6PVk",
@@ -29,8 +30,6 @@ const auth = getAuth(firebaseApp);
 const theMovieApiService = new TheMovieApiService();
 const filmGrid = document.querySelector('.grid');
 const homeGrid = document.querySelector('.home-grid');
-
-
 const searchForm = document.querySelector('.search-form');
 const formWrap = document.querySelector('.form-wrap');
 const alertHeaderMsg = document.querySelector('.header__failure-message');
@@ -56,9 +55,6 @@ const btnSignup = document.getElementById('btnSignup');
 const btnLogout = document.getElementById('btnLogout');
 const successMsg = document.querySelector('.auth__success-msg');
 const authLogout = document.querySelector('.auth__logout');
-
-
-
 const libraryWatchedBtn = document.querySelector('.btn-watched');
 const libraryQueueBtn = document.querySelector('.btn-queue');
 
@@ -129,7 +125,6 @@ function onEscape(evt) {
 }
 
 function onBackdropClick(evt) {
-       console.log(evt.target);
       if (evt.target.classList.contains('backdrop')) {
          movieModal.classList.add('is-hidden');
   }     
@@ -150,7 +145,6 @@ async function monitorAuthState() {
         authLogout.classList.remove('hidden');
         closeAuthBtn.classList.remove('hidden');
         userId = user.uid;
-        console.log(userId);
   } else {
         authWrap.classList.remove('hidden');
         authLogout.classList.add('hidden');
@@ -191,18 +185,15 @@ async function onLibraryPageClick() {
       optionButtons.classList.remove("hidden");
       filmGrid.classList.remove("home-grid");
       filmGrid.classList.add("library-grid");
- 
 
        try {
             const { results, total_pages } = await theMovieApiService.fetchTrendingMovies(1);
-           
             renderGallery(results, homeGrid);
-             
             totalPages = total_pages; 
 
              renderPagination(1, paginationSelection);
              pagination.classList.remove('hidden');
-            // searchByKeyWord = false;
+            
       } catch(error) {
             console.log(error);  
               }  
@@ -391,8 +382,6 @@ async function onSearch(evt) {
             pagination.classList.add("hidden");
       }
 
-
-
       try {
             const { results, total_pages } = await theMovieApiService.fetchMoviesByKeyWord(1);
             pagination.classList.remove("hidden");
@@ -400,8 +389,7 @@ async function onSearch(evt) {
                   alertHeaderMsg.textContent = "Search result not successful. Enter the correct movie name and";
                   pagination.classList.add('hidden');
          }
-            // console.log(results);
-           
+            
             totalPages = total_pages;
             pagesList.innerHTML = "";
             homeGrid.innerHTML = "";
